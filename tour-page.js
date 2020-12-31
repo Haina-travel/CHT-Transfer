@@ -4,8 +4,9 @@ var http = require('https');
 var cheerio = require('cheerio');
 
 var transferPath = [
-    { path: '/tour/xiamentour/xm-1/', code: 'xm-1' },
-    { path: '/tour/lijiangtour/lj-1/', code: 'lj-1' }
+    // { path: '/tour/xiamentour/xm-1/', code: 'xm-1' },
+    // { path: '/tour/lijiangtour/lj-1/', code: 'lj-1' },
+    { path: '/tour/suzhoutour/sz-1a/', code: 'sz-1a' },
 ]
 transferPath.forEach(function (ele, i) {
     loadPage(ele.path, ele.code).then(function (htmlJSON) {
