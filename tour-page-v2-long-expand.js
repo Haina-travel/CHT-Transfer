@@ -3,7 +3,8 @@ let http = require('https');
 let cheerio = require('cheerio');
 
 let transferPath = [
-    { path: '/tour/cht-pt-02/', code: 'cht-pt-02' },
+    // { path: '/tour/cht-pt-02/', code: 'cht-pt-02' },
+    { path: '/tour/xiamentour/xm-7/', code: 'xm-7' },
 ]
 transferPath.forEach(function(ele, i) {
     loadPage(ele.path, ele.code).then(function(htmlJSON) {
@@ -50,7 +51,7 @@ function loadPage(path, code = "") {
                     overviewHtml += $(nextE).prop('outerHTML');
                 }
                 htmlData.overview = overviewHtml;
-                htmlData.highlightsHtml = htmlData.highlights != null ? `<div class="highlights"><h2>Tour Highlights</h2>${htmlData.highlights}</div>` : '';
+                htmlData.highlightsHtml = htmlData.highlights != null ? `<div class="highlights"><h2>Tour Highlights</h2><ul class="infolist">${htmlData.highlights}</ul></div>` : '';
 
                 let TA = '';
                 if ($('.reviewDetail').length > 0) {
@@ -134,6 +135,12 @@ ${htmlJson.description}
 <!--keywords
 ${htmlJson.keywords}
 -->
+<!--tour name
+${htmlJson.tourSubName}
+H1:
+${htmlJson.tourName}
+https://proxy-data.chinahighlights.com/css/tour-detail-former.css
+-->
 <link href="https://proxy-data.chinahighlights.com/css/tour-detail-former.css" rel="stylesheet">
 
 <div class="tournavi">
@@ -205,7 +212,7 @@ ${htmlJson.TAinfo}
 }
 
 function writeFile(htmlStr, target_file_name = 'tmp') {
-    target_file_name = target_file_name.replace(/^\/?|\/?$/g, '').replace(/\/+/g, '.') + '.html';
+    target_file_name = target_file_name.replace(/^\/?|\/?$/g, '').replace(/\/+/g, '.') + '.v2.html';
     fs.writeFileSync(target_file_name, htmlStr, function(err) {
         if (err) {
             console.log("write " + err.message)

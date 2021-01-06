@@ -10,7 +10,7 @@ let transferPath = [
     // { path: '/tour/cht-119/', code: 'cht-119' },
     // { path: '/tour/cht-75/', code: 'cht-75' },
     // { path: '/tour/cht-kf-02/', code: 'cht-kf-02' },
-    // { path: '/tour/cht-seda-01/', code: 'cht-seda-01' },
+    // { path: '/tour/cht-seda-01/', code: 'cht-seda-01' },  // todo: Excluded
     // { path: '/tour/cht-yz-03/', code: 'cht-yz-03' },
     // { path: '/tour/cht-th-04/', code: 'cht-th-04' },
     // { path: '/tour/guangzhoutour/gz-1/', code: 'gz-1' },
@@ -58,10 +58,10 @@ function loadPage(path, code = "") {
                 let overviewHtml = '';
                 for (let index = 0; index < $('.tourHighlights').prevAll().length; index++) {
                     const nextE = $('.tourHighlights').prevAll().eq(index);
-                    overviewHtml += $(nextE).prop('outerHTML');
+                    overviewHtml = $(nextE).prop('outerHTML') + overviewHtml;
                 }
                 htmlData.overview = overviewHtml;
-                htmlData.highlightsHtml = htmlData.highlights!=null ? `<div class="highlights"><h2>Tour Highlights</h2>${htmlData.highlights}</div>` : '';
+                htmlData.highlightsHtml = htmlData.highlights!=null ? `<div class="highlights"><h2>Tour Highlights</h2><ul class="infolist"> ${htmlData.highlights}</ul></div>` : '';
 
                 let TA = '';
                 if ($('.reviewDetail').length > 0) {
@@ -87,7 +87,7 @@ function loadPage(path, code = "") {
                     htmlData.TAinfo = TA;
                 }
                 // todo: .lastRead inquiry ;
-                $('.daytourBox>.dayTourList, .daytourBox>.dayTourList>.dayTourList').each(function(i, tourlist) {
+                $('.dayTourList, .daytourBox>.dayTourList, .daytourBox>.dayTourList>.dayTourList').each(function(i, tourlist) {
                     $(tourlist).children().each(function(j, p) {
                         if ($(p).find('img').length > 0) {
                             let imgsPHtml = '';
@@ -97,10 +97,10 @@ function loadPage(path, code = "") {
                                     continue;
                                 }
                                 if ($(imgE).parent().parent().hasClass('NoteInfo')) {
-                                    let imgsHtml = `<div class="tourimg"><img alt="${$(imgE).attr('alt')}" class="TopImage img-responsive" src="${$(imgE).attr('src')}"> <span class="imgname">${$(imgE).attr('alt')}</span></div>`;
+                                    let imgsHtml = `<div class="infoimage"><img alt="${$(imgE).attr('alt')}" class="img-responsive " src="${$(imgE).attr('src')}"><span class="infoimagetitle">${$(imgE).attr('alt')}</span></div>`;
                                     $(imgE).parent().replaceWith(imgsHtml);
                                 } else {
-                                    imgsPHtml += `<div class="tourimg"><img alt="${$(imgE).attr('alt')}" class="TopImage img-responsive" src="${$(imgE).attr('src')}"> </div>`;
+                                    imgsPHtml += `<div class="infoimage"><img alt="${$(imgE).attr('alt')}" class="img-responsive " src="${$(imgE).attr('src')}"><span class="infoimagetitle">${$(imgE).attr('alt')}</span></div>`;
                                 }
                             }
                             if (imgsPHtml !== '') $(p).replaceWith(imgsPHtml);
@@ -127,7 +127,7 @@ function loadPage(path, code = "") {
 
                 $('#booking_form_button').remove();
                 htmlData.last += $('.tripNotes').length> 0 ? $('.tripNotes').html() : '';
-                htmlData.last += $('.includeIcon').length> 0 ? $('.includeIcon').prop('outerHTML') + $('.whatIncluded').prop('outerHTML') : '';
+                htmlData.last += $('.includeIcon').length> 0 ? ($('.includeIcon').prop('outerHTML') + '<ul class="infolist">' + $('.whatIncluded').html() + '</ul>') : '';
                 // console.log(htmlData.last)
                 // console.log("over");
                 resolve(htmlData);
@@ -150,7 +150,10 @@ ${htmlJson.description}
 <!--keywords
 ${htmlJson.keywords}
 -->
-<link href="https://proxy-data.chinahighlights.com/css/tour-detail-former.css" rel="stylesheet">
+<!--tour name
+${htmlJson.tourSubName}
+https://proxy-data.chinahighlights.com/css/tour-detail-former.css
+-->
 
 <div class="tournavi">
   <span class="TopNavi"><a href="#summary">Summary</a></span> <span class="TopNavi"><a href="#highlights">Highlights</a></span> <span class="TopNavi"><a href="#itinerary">Itinerary</a></span> <span class="TopNaviLast"><a href="#priceincludes">Price</a></span></div>
