@@ -3,8 +3,20 @@ let http = require('https');
 let cheerio = require('cheerio');
 
 let transferPath = [
-    { path: '/tour/silk-road-tours/chtgp-sl-03/', code: 'chtgp-sl-03' },
-    { path: '/tour/silk-road-tours/chtgp-sl-04/', code: 'chtgp-sl-04' },
+    { path: '/tour/cht-pt-01/', code: 'cht-pt-01' },
+    { path: '/tour/cht-119/', code: 'cht-119' },
+    { path: '/tour/cht-75/', code: 'cht-75' },
+    { path: '/tour/cht-kf-02/', code: 'cht-kf-02' },
+    { path: '/tour/cht-pt-02/', code: 'cht-pt-02' },
+    { path: '/tour/cht-seda-01/', code: 'cht-seda-01' },
+    { path: '/tour/cht-wh-04/', code: 'cht-wh-04' },
+    { path: '/tour/cht-wh-07/', code: 'cht-wh-07' },
+    { path: '/tour/cht-yz-03/', code: 'cht-yz-03' },
+    { path: '/tour/cht-th-04/', code: 'cht-th-04' },
+    { path: '/tour/guangzhoutour/gz-1/', code: 'gz-1' },
+    { path: '/tour/guilintour/gl-15/', code: 'gl-15' },
+    { path: '/tour/guilintour/gl-46/', code: 'gl-46' },
+    { path: '/tour/lijiangtour/lj-2/', code: 'lj-2' },
 ]
 transferPath.forEach(function(ele, i) {
     loadPage(ele.path, ele.code).then(function(htmlJSON) {
@@ -33,16 +45,15 @@ function loadPage(path, code = "") {
                     keywords: $('meta[name="keywords"]').attr('content'),
                     topImg: $('.TopCht1 img.visible-xs').length > 0 ? $('.TopCht1 img.visible-xs').attr('src') : $('.TopCht1 img').eq(0).attr('src'),
                     topImgAlt: $('.TopCht1 img.visible-xs').length > 0 ? $('.TopCht1 img.visible-xs').attr('alt') : $('.TopCht1 img').eq(0).attr('alt'),
-                    tourSubName: $('.Top10').text(),
-                    tourName: $('.TourItinerary').text(),
+                    tourSubName: $('.topSubTitle').text(),
+                    tourName: $('h1.Top10').text(),
                     overview: '',
                     highlights: $('.tourHighlights ul').html(),
+                    summary: '',
                     TAinfo: '',
                     itinerary: [],
-                    itineraryP: '',
-                    last: '',
                     onedayroute: $('.onedayroute').parent().html(),
-                    priceIncludes: $('.TourPrice').length > 0 ? $('.TourPrice').prop('outerHTML') : ''
+                    priceIncludes: $('.TopPrice').length > 0 ? $('.TopPrice').prop('outerHTML') : ''
                 }
                 let overviewHtml = '';
                 for (let index = 0; index < $('.tourHighlights').prevAll().length; index++) {
@@ -74,9 +85,10 @@ function loadPage(path, code = "") {
                     </div>`;
                     htmlData.TAinfo = TA;
                 }
-                $('#itineraryDetails .TourList').each(function(i, tourlist) {
-                    $(tourlist).children('.TourInfo').children().each(function(j, p) {
-                        if ($(p).find('img').length > 0 ) {
+                // todo: .lastRead inquiry ;
+                $('.daytourBox .dayTourList').each(function(i, tourlist) {
+                    $(tourlist).children().each(function(j, p) {
+                        if ($(p).find('img').length > 0) {
                             let imgsPHtml = '';
                             for (let index = 0; index < $(p).find('img').length; index++) {
                                 const imgE = $(p).find('img').eq(index);
@@ -87,10 +99,10 @@ function loadPage(path, code = "") {
                                     let imgsHtml = `<div class="tourimg"><img alt="${$(imgE).attr('alt')}" class="TopImage img-responsive" src="${$(imgE).attr('src')}"> <span class="imgname">${$(imgE).attr('alt')}</span></div>`;
                                     $(imgE).parent().replaceWith(imgsHtml);
                                 } else {
-                                    imgsPHtml += `<div class="tourimg"><img alt="${$(imgE).attr('alt')}" class="TopImage img-responsive" src="${$(imgE).attr('src')}"> <span class="imgname">${$(imgE).attr('alt')}</span></div>`;
+                                    imgsPHtml += `<div class="tourimg"><img alt="${$(imgE).attr('alt')}" class="TopImage img-responsive" src="${$(imgE).attr('src')}"> </div>`;
                                 }
                             }
-                            if(imgsPHtml!=='') $(p).replaceWith(imgsPHtml);
+                            if (imgsPHtml !== '') $(p).replaceWith(imgsPHtml);
                         }
                         if ($(p).find('.fa-cutlery').length > 0) {
                             let mealHtml = `<span class="Dinner">${$(p).text()}</span>`;
@@ -98,27 +110,17 @@ function loadPage(path, code = "") {
                         }
                     });
                     let tourDay = {
-                        day: $(tourlist).children('.TourDates').children('.TourDay').text(),
-                        title: $(tourlist).children('.TourDates').text(),
-                        TourInfo: $(tourlist).children('.TourInfo').html()
+                        day: $(tourlist).children('.tourDates').children('.tourDays').text(),
+                        title: $(tourlist).children('.tourDates').text(),
+                        TourInfo: $(tourlist).html()
                     }
                     tourDay.title = tourDay.title.replace(tourDay.day, '');
                     htmlData.itinerary.push(tourDay);
                 });
-                $('#itineraryDetails>p').each(function(i,p){
-                    htmlData.itineraryP += $(p).prop('outerHTML');
-                });
 
                 $('#booking_form_button').remove();
-                // htmlData.last += $('.includeIcon').prop('outerHTML') + $('.whatIncluded').prop('outerHTML');
-                $('.TopDetail').next('.container').find('div[class^="col-"],h2[class^="col-"]').each(function(i,p){
-                    if ($(p).prop('tagName').toLowerCase()==='div') {
-                        htmlData.last += $(p).html();
-                        return true;
-                    }
-                    $(p).attr('class','');
-                    htmlData.last += $(p).prop('outerHTML');
-                })
+                htmlData.last = $('.tripNotes').html();
+                htmlData.last += $('.includeIcon').prop('outerHTML') + $('.whatIncluded').prop('outerHTML');
                 // console.log(htmlData.last)
                 // console.log("over");
                 resolve(htmlData);
@@ -165,13 +167,16 @@ ${htmlJson.keywords}
   ${htmlJson.overview}
 </div>
 
+<div class="highlights">
+  <h2>Tour Highlights</h2>
+${htmlJson.highlights}
+</div>
 <div class="maincontent">
 ${htmlJson.TAinfo}
 </div>
   <a id="itinerary"></a>
 <div class="tourdetail">
-  <h2>Itinerary Details</h2>
-  ${htmlJson.itineraryP}
+  <h2>Suggested Itinerary</h2>
   ${tourdetail}
 </div>
 

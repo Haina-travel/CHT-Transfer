@@ -3,8 +3,8 @@ let http = require('https');
 let cheerio = require('cheerio');
 
 let transferPath = [
-    { path: '/tour/silk-road-tours/chtgp-sl-03/', code: 'chtgp-sl-03' },
-    { path: '/tour/silk-road-tours/chtgp-sl-04/', code: 'chtgp-sl-04' },
+    { path: '/tour/cht-63/', code: 'cht-63' },
+    // { path: '/tour/china-summer-vacations.htm', code: 'Summer-1' },
 ]
 transferPath.forEach(function(ele, i) {
     loadPage(ele.path, ele.code).then(function(htmlJSON) {
@@ -36,11 +36,13 @@ function loadPage(path, code = "") {
                     tourSubName: $('.Top10').text(),
                     tourName: $('.TourItinerary').text(),
                     overview: '',
-                    highlights: $('.tourHighlights ul').html(),
+                    highlights: $('.TourHighlights ul').html(),
                     TAinfo: '',
+                    itineraryDays: [],
                     itinerary: [],
                     itineraryP: '',
                     last: '',
+                    promote: '',
                     onedayroute: $('.onedayroute').parent().html(),
                     priceIncludes: $('.TourPrice').length > 0 ? $('.TourPrice').prop('outerHTML') : ''
                 }
@@ -50,6 +52,9 @@ function loadPage(path, code = "") {
                     overviewHtml += $(nextE).prop('outerHTML');
                 }
                 htmlData.overview = overviewHtml;
+
+                $('.earlyBird .freeUpgrade').remove('.InquiryButton');
+                htmlData.promote = $('.earlyBird .freeUpgrade').prop('outerHTML');
 
                 let TA = '';
                 if ($('.reviewDetail').length > 0) {
@@ -74,6 +79,17 @@ function loadPage(path, code = "") {
                     </div>`;
                     htmlData.TAinfo = TA;
                 }
+                $('.TourItinerary').next('div').find('.TourDays').each(function(i, d){
+                    let tmpD = {
+                        day: $(d).children('b').text(),
+                        dayTour: []
+                    };
+                    $(d).children('ul.TourSees').children().each(function(j, dt) {
+                        tmpD.dayTour.push($(dt).text())
+                    })
+                    htmlData.itineraryDays.push(tmpD);
+                });
+
                 $('#itineraryDetails .TourList').each(function(i, tourlist) {
                     $(tourlist).children('.TourInfo').children().each(function(j, p) {
                         if ($(p).find('img').length > 0 ) {
@@ -109,7 +125,7 @@ function loadPage(path, code = "") {
                     htmlData.itineraryP += $(p).prop('outerHTML');
                 });
 
-                $('#booking_form_button').remove();
+                $('#booking_form_button, .InquiryButton').remove();
                 // htmlData.last += $('.includeIcon').prop('outerHTML') + $('.whatIncluded').prop('outerHTML');
                 $('.TopDetail').next('.container').find('div[class^="col-"],h2[class^="col-"]').each(function(i,p){
                     if ($(p).prop('tagName').toLowerCase()==='div') {
@@ -136,9 +152,11 @@ function tourTemplate(htmlJson) {
 <div class="tourbg">
   <div class="tourinfo"><span class="tourdate">${tourD.day}</span> <span class="toursite">${tourD.title}</span> ${tourD.TourInfo}
   </div>
-
-</div>
-        `;
+</div>`;
+    }).join('');
+    let tourDays = htmlJson.itineraryDays.map(tourD => {
+        const li = tourD.dayTour.join(', ');
+        return `<span class="day1Dot">${tourD.day}</span><b>${li}</b>`;
     }).join('');
     let htmlStr = `
 <!--description
@@ -159,14 +177,21 @@ ${htmlJson.keywords}
     <h1 class="Top10">${htmlJson.tourName}</h1>
   </div>
 </div>
-
+<div class="lineBlock">${tourDays}</div>
 <div class="maincontent">
   <!--<div class="medias"><amp-addthis data-pub-id="ra-52170b0a4a301edc" data-widget-id="odix" height="55" width="400"></amp-addthis></div>-->
   ${htmlJson.overview}
 </div>
 
+<div class="highlights">
+  <h2>Tour Highlights</h2>
+${htmlJson.highlights}
+</div>
 <div class="maincontent">
 ${htmlJson.TAinfo}
+</div>
+<div class="maincontent">
+${htmlJson.promote}
 </div>
   <a id="itinerary"></a>
 <div class="tourdetail">
