@@ -4,12 +4,9 @@ let cheerio = require('cheerio');
 
 let transferPath = [
     { path: '/tour/suzhoutour/sh-33/', code: 'sh-33' },
-    // { path: '/tour/cht-63/', code: 'cht-63' },
-    // { path: '/tour/china-summer-vacations.htm', code: 'Summer-1' },
     { path: '/tour/lhasatour/xz-4/', code: 'xz-4' },
-    // { path: '/tour/silk-road-tours/chtgp-sl-03/', code: 'chtgp-sl-03' },
-    // { path: '/tour/silk-road-tours/chtgp-sl-04/', code: 'chtgp-sl-04' },
     { path: '/tour/huangshantour/hs-1/', code: 'hs-1' },
+    { path: '/tour/xiamentour/xm-7/', code: 'xm-7' },
 ]
 transferPath.forEach(function(ele, i) {
     loadPage(ele.path, ele.code).then(function(htmlJSON) {
