@@ -3,8 +3,8 @@ let http = require('https');
 let cheerio = require('cheerio');
 
 let transferPath = [
-    // { path: '/tour/cht-pt-02/', code: 'cht-pt-02' },
-    { path: '/tour/xiamentour/xm-7/', code: 'xm-7' },
+    { path: '/tour/cht-pt-02/', code: 'cht-pt-02' },
+    // { path: '/tour/xiamentour/xm-7/', code: 'xm-7' },
 ]
 transferPath.forEach(function(ele, i) {
     loadPage(ele.path, ele.code).then(function(htmlJSON) {
@@ -210,10 +210,10 @@ ${htmlJson.TAinfo}
     `;
     return htmlStr;
 }
-
+var path = require('path');
 function writeFile(htmlStr, target_file_name = 'tmp') {
     target_file_name = target_file_name.replace(/^\/?|\/?$/g, '').replace(/\/+/g, '.') + '.v2.html';
-    fs.writeFileSync(target_file_name, htmlStr, function(err) {
+    fs.writeFileSync(path.join('v2', target_file_name), htmlStr, function(err) {
         if (err) {
             console.log("write " + err.message)
             return

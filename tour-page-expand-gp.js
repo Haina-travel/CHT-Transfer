@@ -205,9 +205,10 @@ ${htmlJson.TAinfo}
     return htmlStr;
 }
 
+var path = require('path');
 function writeFile(htmlStr, target_file_name = 'tmp') {
     target_file_name = target_file_name.replace(/^\/?|\/?$/g, '').replace(/\/+/g, '.') + '.html';
-    fs.writeFileSync(target_file_name, htmlStr, function(err) {
+    fs.writeFileSync(path.join('v3', target_file_name), htmlStr, function(err) {
         if (err) {
             console.log("write " + err.message)
             return
