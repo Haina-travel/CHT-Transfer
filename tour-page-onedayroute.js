@@ -4,8 +4,9 @@ let http = require('https');
 let cheerio = require('cheerio');
 
 let transferPath = [
-    // { path: '/tour/xiamentour/xm-1/', code: 'xm-1' },
-    // { path: '/tour/lijiangtour/lj-1/', code: 'lj-1' },
+    // {path: '/tour/chengdutour/cd-7/', code: 'cd-7'},
+    {path: '/tour/chengdutour/cd-7a/', code: 'cd-7a'},
+    {path: '/tour/xiamentour/1-day-nanjing-tulou-tour/', code: 'XM-2'},
 ]
 transferPath.forEach(function (ele, i) {
     loadPage(ele.path, ele.code).then(function (htmlJSON) {
@@ -36,18 +37,40 @@ function loadPage(path, code="") {
                     topImgAlt:  $('.TopCht1 img.visible-xs').length > 0? $('.TopCht1 img.visible-xs').attr('alt') : $('.TopCht1 img').eq(0).attr('alt'),
                     tourSubName: $('.topheadline').text(),
                     tourName: $('#contentHead h1').text(),
-                    overview: $('#contentHead').next().html(),
-                    highlights: $('.highlights ul').html(),
+                    overview: '', //$('#contentHead').next().html(),
+                    highlights: '',//$('.highlights ul').html(),
                     TAinfo: '',
                     itinerary: [],
-                    priceIncludes: $('.priceIncludes').html()
+                    onedayroute: $('.onedayroute').parent().html(),
+                    priceIncludes: $('.priceIncludes').length > 0 ? $('.priceIncludes').html() : ''
                 }
+                let overviewHtml = '';
+                for (let index = 0; index < $('#contentHead').nextAll().length; index++) {
+                    const nextE = $('#contentHead').nextAll().eq(index);
+                    overviewHtml += $(nextE).prop('outerHTML');
+                }
+                htmlData.overview = overviewHtml;
+
+                let highlightsHtml = $('.highlightscontent').html();
+                htmlData.highlights = highlightsHtml.replace('highlightsdetail','hilist');
+
                 let TA = '';
                 if ($('.reviewDetail').length > 0) {
                     let taP = $('.highlights .reviewDetail').text();
                     let taFrom = $('.highlights .reviewDetail .byWho').text();
                     tap = taP.replace(taFrom, '');
                     let taLink = $('.highlights .reviewNumber a').attr('href');
+                    TA = `<div class="reviews">
+                    <p>${taP}<a href="${taLink}" target="_top">Read more</a></p>
+                    <p class="reviewname">${taFrom}</p>
+                    </div>`;
+                    htmlData.TAinfo = TA;
+                }
+                if ($('.reviewdetail').length > 0) {
+                    let taP = $('.reviewdetail').text();
+                    let taFrom = $('.reviewdetail .bywho').text();
+                    tap = taP.replace(taFrom, '');
+                    let taLink = $('.reviewNumber a').attr('href');
                     TA = `<div class="reviews">
                     <p>${taP}<a href="${taLink}" target="_top">Read more</a></p>
                     <p class="reviewname">${taFrom}</p>
@@ -132,23 +155,20 @@ ${htmlJson.keywords}
   ${htmlJson.overview}
 </div>
 
-<div class="maincontent">
+<div class="highlights">
   <h2>Tour Highlights</h2>
-
-  <ul class="infolist">
-    ${htmlJson.highlights}
-  </ul>
-  ${htmlJson.TAinfo}
-
-  <a id="itinerary"></a>
+${htmlJson.highlights}
 </div>
+<div class="maincontent">
+${htmlJson.TAinfo}
+</div>
+  <a id="itinerary"></a>
 <div class="tourdetail">
   <h2>Suggested Itinerary</h2>
-  ${tourdetail}
+  ${htmlJson.onedayroute}
 </div>
 
 <div class="maincontent">
-  ${htmlJson.last}
   ${htmlJson.priceIncludes}
 </div>
 
