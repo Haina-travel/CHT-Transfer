@@ -3,18 +3,7 @@ let http = require('https');
 let cheerio = require('cheerio');
 
 let transferPath = [
-    // { path: '/tour/guilintour/gl-15/', code: 'gl-15' },
-    // { path: '/tour/cht-wh-07/', code: 'cht-wh-07' },
-    // { path: '/tour/cht-wh-04/', code: 'cht-wh-04' },
-    // { path: '/tour/cht-pt-01/', code: 'cht-pt-01' },
-    // { path: '/tour/cht-119/', code: 'cht-119' },
-    // { path: '/tour/cht-75/', code: 'cht-75' },
-    // { path: '/tour/cht-kf-02/', code: 'cht-kf-02' },
-    // { path: '/tour/cht-seda-01/', code: 'cht-seda-01' },
-    // { path: '/tour/cht-yz-03/', code: 'cht-yz-03' },
-    // { path: '/tour/cht-th-04/', code: 'cht-th-04' },
-    // { path: '/tour/guangzhoutour/gz-1/', code: 'gz-1' },
-    // { path: '/tour/guilintour/gl-46/', code: 'gl-46' },
+    { path: '/tour/cht-pt-02/', code: 'cht-pt-02' },
 ]
 transferPath.forEach(function(ele, i) {
     loadPage(ele.path, ele.code).then(function(htmlJSON) {
@@ -61,7 +50,7 @@ function loadPage(path, code = "") {
                     overviewHtml += $(nextE).prop('outerHTML');
                 }
                 htmlData.overview = overviewHtml;
-                htmlData.highlightsHtml = htmlData.highlights!=null ? `<div class="highlights"><h2>Tour Highlights</h2>${htmlData.highlights}</div>` : '';
+                htmlData.highlightsHtml = htmlData.highlights != null ? `<div class="highlights"><h2>Tour Highlights</h2>${htmlData.highlights}</div>` : '';
 
                 let TA = '';
                 if ($('.reviewDetail').length > 0) {
@@ -86,9 +75,9 @@ function loadPage(path, code = "") {
                     </div>`;
                     htmlData.TAinfo = TA;
                 }
-                // todo: .lastRead inquiry ;
+
                 $('.daytourBox>.dayTourList, .daytourBox>.dayTourList>.dayTourList').each(function(i, tourlist) {
-                    $(tourlist).children().each(function(j, p) {
+                    $(tourlist).children('.ItineraryContent').children().each(function(j, p) {
                         if ($(p).find('img').length > 0) {
                             let imgsPHtml = '';
                             for (let index = 0; index < $(p).find('img').length; index++) {
@@ -97,10 +86,10 @@ function loadPage(path, code = "") {
                                     continue;
                                 }
                                 if ($(imgE).parent().parent().hasClass('NoteInfo')) {
-                                    let imgsHtml = `<div class="tourimg"><img alt="${$(imgE).attr('alt')}" class="TopImage img-responsive" src="${$(imgE).attr('src')}"> <span class="imgname">${$(imgE).attr('alt')}</span></div>`;
+                                    let imgsHtml = `<div class="infoimage"><img alt="${$(imgE).attr('alt')}" class="img-responsive " src="${$(imgE).attr('src')}"><span class="infoimagetitle">${$(imgE).attr('alt')}</span></div>`;
                                     $(imgE).parent().replaceWith(imgsHtml);
                                 } else {
-                                    imgsPHtml += `<div class="tourimg"><img alt="${$(imgE).attr('alt')}" class="TopImage img-responsive" src="${$(imgE).attr('src')}"> </div>`;
+                                    imgsPHtml += `<div class="infoimage"><img alt="${$(imgE).attr('alt')}" class="img-responsive " src="${$(imgE).attr('src')}"><span class="infoimagetitle">${$(imgE).attr('alt')}</span></div>`;
                                 }
                             }
                             if (imgsPHtml !== '') $(p).replaceWith(imgsPHtml);
@@ -111,23 +100,17 @@ function loadPage(path, code = "") {
                         }
                     });
                     let tourDay = {
-                        day: $(tourlist).children('.tourDates').children('.tourDays').text(),
-                        title: $(tourlist).children('.tourDates').text(),
-                        TourInfo: ''
+                        day: $(tourlist).children('.tourDatesBJ').children('.tourDays').text(),
+                        title: $(tourlist).children('.tourDatesBJ').text(),
+                        TourInfo: $(tourlist).children('.ItineraryContent').html()
                     }
-                    $(tourlist).children('.tourDates').nextUntil('.dayTourList').each(function(i, tourp){
-                        tourDay.TourInfo += $(tourp).prop('outerHTML');
-                    })
-                    // $(tourlist).remove('.dayTourList');
-                    // $(tourlist).remove('.tourDates');
-                    // tourDay.TourInfo = $(tourlist).html();
                     tourDay.title = tourDay.title.replace(tourDay.day, '');
                     htmlData.itinerary.push(tourDay);
                 });
 
                 $('#booking_form_button').remove();
-                htmlData.last += $('.tripNotes').length> 0 ? $('.tripNotes').html() : '';
-                htmlData.last += $('.includeIcon').length> 0 ? $('.includeIcon').prop('outerHTML') + $('.whatIncluded').prop('outerHTML') : '';
+                htmlData.last += $('.tripNotes').length > 0 ? $('.tripNotes').html() : '';
+                htmlData.last += $('.includeIcon').length > 0 ? $('.includeIcon').prop('outerHTML') + $('.whatIncluded').prop('outerHTML') : '';
                 // console.log(htmlData.last)
                 // console.log("over");
                 resolve(htmlData);
@@ -142,6 +125,7 @@ function loadPage(path, code = "") {
 function tourTemplate(htmlJson) {
     let tourdetail = htmlJson.itinerary.map(tourD => {
         return `  <div class="tourDatesBJ"><span class="tourDays">${tourD.day}</span> ${tourD.title}</div><div class="ItineraryContent">${tourD.TourInfo}  </div>`;
+
     }).join('');
     let htmlStr = `
 <!--description
@@ -178,13 +162,12 @@ ${htmlJson.keywords}
     </div>
     </div>
   </div>
-
-
 <div class="maincontent">
   <!--<div class="medias"><amp-addthis data-pub-id="ra-52170b0a4a301edc" data-widget-id="odix" height="55" width="400"></amp-addthis></div>-->
   ${htmlJson.overview}
 </div>
 ${htmlJson.highlightsHtml}
+
 <div class="maincontent">
 ${htmlJson.TAinfo}
 </div>
