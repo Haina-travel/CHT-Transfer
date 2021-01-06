@@ -4,9 +4,8 @@ let http = require('https');
 let cheerio = require('cheerio');
 
 let transferPath = [
-    { path: '/tour/xiamentour/xm-1/', code: 'xm-1' },
+    // { path: '/tour/xiamentour/xm-1/', code: 'xm-1' },
     // { path: '/tour/lijiangtour/lj-1/', code: 'lj-1' },
-    // { path: '/tour/suzhoutour/sz-1a/', code: 'sz-1a' },
 ]
 transferPath.forEach(function (ele, i) {
     loadPage(ele.path, ele.code).then(function (htmlJSON) {
@@ -33,19 +32,42 @@ function loadPage(path, code="") {
                     url: path,
                     description: $('meta[name="description"]').attr('content'),
                     keywords: $('meta[name="keywords"]').attr('content'),
-                    topImg: $('.TopCht1 img.visible-xs').attr('src'),
-                    topImgAlt: $('.TopCht1 img.visible-xs').attr('alt'),
+                    topImg: $('.TopCht1 img.visible-xs') ? $('.TopCht1 img.visible-xs').attr('src') : $('.TopCht1 img').eq(0).attr('src'),
+                    topImgAlt:  $('.TopCht1 img.visible-xs') ? $('.TopCht1 img.visible-xs').attr('alt') : $('.TopCht1 img.visible-xs').attr('alt'),
                     tourSubName: $('.topheadline').text(),
                     tourName: $('#contentHead h1').text(),
                     overview: $('#contentHead').next().html(),
                     highlights: $('.highlights ul').html(),
-                    itinerary: []
+                    TAinfo: '',
+                    itinerary: [],
+                    priceIncludes: $('.priceIncludes').html()
                 }
-                // todo: Dinner; tourimg,imgname;
+                let TA = '';
+                if ($('.highlights').find('.reviewDetail').length > 0) {
+                    let taP = $('.highlights .reviewDetail').text();
+                    let taFrom = $('.highlights .reviewDetail .byWho').text();
+                    tap = taP.replace(taFrom, '');
+                    let taLink = $('.highlights .reviewNumber a').attr('href');
+                    TA = `<div class="reviews">
+                    <p>${taP}<a href="${taLink}" target="_top">Read more</a></p>
+                    <p class="reviewname">${taFrom}</p>
+                    </div>`;
+                    htmlData.TAinfo = TA;
+                }
+                // todo: .lastRead inquiry ;
                 $('.touritinerary .TourList').each(function (i, tourlist) {
                     $(tourlist).children('.TourInfo').children().each(function (j, p){
-                        if ($(p).find('img')) {
-                            $(p).replaceWith(`<div class="tourimg"><img alt="Enjoy the beautiful lake view in the Summer Palace" class="TopImage img-responsive" src="https://data.chinahighlights.com/image/tour-detail/amp-image/bj-5-day-4-1.jpg"> <span class="imgname">Enjoy the beautiful lake view in the Summer Palace</span></div>`);
+                        if ($(p).find('img').length > 0) {
+                            let imgsHtml = '';
+                            for (let index = 0; index < $(p).find('img').length; index++) {
+                                const imgE = $(p).find('img').eq(index);
+                                imgsHtml += `<div class="tourimg"><img alt="${$(imgE).attr('alt')}" class="TopImage img-responsive" src="${$(imgE).attr('src')}"> <span class="imgname">${$(imgE).attr('alt')}</span></div>`;
+                            }
+                            $(p).replaceWith(imgsHtml);
+                        }
+                        if ($(p).find('.fa-cutlery').length > 0) {
+                            let mealHtml = `<span class="Dinner">${$(p).text()}</span>`;
+                            $(p).replaceWith(mealHtml);
                         }
                     });
                     let tourDay = {
@@ -79,7 +101,6 @@ function tourTemplate(htmlJson) {
   <div class="tourinfo"><span class="tourdate">${tourD.day}</span> <span class="toursite">${tourD.title}</span> ${tourD.TourInfo}
   </div>
 
-<!--<div class="tourimg"><img alt="Meet your guide at the airport" class="TopImage img-responsive" src="https://data.chinahighlights.com/image/tour-detail/amp-image/bj-1-day-1-1.jpg"> <span class="imgname">Meet your guide at the airport</span></div>-->
 </div>
         `;
     }).join('');
@@ -117,11 +138,7 @@ ${htmlJson.keywords}
   <ul class="infolist">
     ${htmlJson.highlights}
   </ul>
-  <!--
-<div class="reviews">
-<p>We had an amazing time in Beijing! Every day was filled with tourist activities and authentic activities. Our tour guide, Laura, was extremely flexible and accommodating. She made sure all of our needs were met. My daughter and I had many questions and she and our driver, Larry answered all of them. <a href="https://www.tripadvisor.com/ShowUserReviews-g294212-d6433772-r642134990-China_Highlights-Beijing.html" target="_top">Read more</a></p>
-<p class="reviewname">Yogi Bear, from US</p>
-</div>-->
+  ${htmlJson.TAinfo}
 
   <a id="itinerary"></a>
 </div>
@@ -132,6 +149,7 @@ ${htmlJson.keywords}
 
 <div class="maincontent">
   ${htmlJson.last}
+  ${htmlJson.priceincludes}
 </div>
 
 <div class="inquirybutton"><a href="#iqnuirybutton">Inquire <img alt="" class="img-responsive" height="10px" src="//data.chinahighlights.com/pic/amp-inquiry-button-arrow.png" width="16px"> </a></div>
@@ -158,7 +176,7 @@ ${htmlJson.keywords}
 }
 
 function writeFile(htmlStr, target_file_name = 'tmp') {
-    target_file_name = target_file_name.replace(/^\/?|\/?$/g, '').replace(/\/+/g, '.') + '.2.html';
+    target_file_name = target_file_name.replace(/^\/?|\/?$/g, '').replace(/\/+/g, '.') + '.html';
     fs.writeFileSync(target_file_name, htmlStr, function (err) {
         if (err) {
             console.log("write " + err.message)
