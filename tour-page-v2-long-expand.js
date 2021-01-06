@@ -212,7 +212,7 @@ ${htmlJson.TAinfo}
 }
 var path = require('path');
 function writeFile(htmlStr, target_file_name = 'tmp') {
-    target_file_name = target_file_name.replace(/^\/?|\/?$/g, '').replace(/\/+/g, '.') + '.v2.html';
+    target_file_name = target_file_name.replace(/^\/?|\/?$/g, '').replace(/\/+/g, '.') + '.html';
     fs.writeFileSync(path.join('v2', target_file_name), htmlStr, function(err) {
         if (err) {
             console.log("write " + err.message)
