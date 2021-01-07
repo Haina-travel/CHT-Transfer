@@ -205,7 +205,10 @@ const itineraryImg = (imgSrc, imgTitle, templateV) => {
             imgTitleHtml = imgTitle !== '' ? `<span class="imgname">${imgTitle}</span>` : '';
             imgsHtml = `<div class="tourimg"><img alt="${imgTitle}" class="TopImage img-responsive" src="${imgSrc}"> ${imgTitleHtml}</div>`;
             break;
-
+        case 'v2':
+            imgTitleHtml = imgTitle !== '' ? `<span class="infoimagetitle">${imgTitle}</span>` : '';
+            imgsHtml = `<div class="infoimage"><img alt="${imgTitle}" class="img-responsive " src="${imgSrc}"></div>`;
+            break;
         default:
             break;
     }

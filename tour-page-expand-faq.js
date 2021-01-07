@@ -31,9 +31,7 @@ function loadPage(ele) {
                 let htmlData = utils.htmlData($, ele);
                 htmlData.itinerary = utils.itineraryDetail($, templateV, $('.daytourBox>.ItineraryContent'), null, 'tourDatesBJ', 'tourDays');
                 htmlData.faq = utils.faqDetail($, $('.topFaq .ItineraryContent'), templateV);
-                // htmlData.last = utils.lastInfo_cht($);
-                // todo: lastInfo
-                htmlData.last = $('.includeIcon').prop('outerHTML') + $('.whatIncluded').prop('outerHTML');
+                htmlData.last = utils.lastInfo_cht($);
                 resolve(htmlData);
             }).on('error', function(e) {
                 reject(e)
