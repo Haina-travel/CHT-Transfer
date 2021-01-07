@@ -29,6 +29,7 @@ function loadPage(path, code = "") {
                     $(ul).attr('class','');
                     $(ul).addClass('infolist');
                 })
+                $('#booking_form_button, .InquiryButton').remove();
                 let htmlData = {
                     tourCode: code,
                     url: path,
@@ -193,6 +194,20 @@ ${htmlJson.keywords}
   </div>
 </div>
 
+<div class="TopItinerary">
+  <div class="TMcontent"><span class="TMtitle">Tailor Make Your Tour:</span>
+  <ul class="infolist">
+      <li>Your Schedule</li>
+      <li>Your Interests</li>
+      <li>Your Hotel Tastes</li>
+  </ul>
+  </div>
+  <div class=" DetailTopTM">
+  <div class="TopPrice">
+  ${htmlJson.priceIncludes}
+  </div>
+  </div>
+</div>
 <div class="maincontent">
   <!--<div class="medias"><amp-addthis data-pub-id="ra-52170b0a4a301edc" data-widget-id="odix" height="55" width="400"></amp-addthis></div>-->
   ${htmlJson.overview}
@@ -200,7 +215,7 @@ ${htmlJson.keywords}
 
 <div class="highlights">
   <h2>Tour Highlights</h2>
-${htmlJson.highlights}
+<ul class="infolist">${htmlJson.highlights}</ul>
 </div>
 <div class="maincontent">
 ${htmlJson.TAinfo}
@@ -213,9 +228,6 @@ ${htmlJson.TAinfo}
 <div class="maincontent">
 <h2>Trip Notes</h2>
   ${faqdetail}
-</div>
-<div class="maincontent">
-  ${htmlJson.priceIncludes}
 </div>
 <div class="maincontent">
   ${htmlJson.last}
