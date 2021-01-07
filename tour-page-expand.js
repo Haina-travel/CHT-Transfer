@@ -6,7 +6,8 @@ let transferPath = [
     // { path: '/tour/suzhoutour/sh-33/', code: 'sh-33' },
     // { path: '/tour/lhasatour/xz-4/', code: 'xz-4' },
     // { path: '/tour/huangshantour/hs-1/', code: 'hs-1' },
-    { path: '/tour/xiamentour/xm-7/', code: 'xm-7' },
+    // { path: '/tour/xiamentour/xm-7/', code: 'xm-7' },
+    { path: '/tour/cht-ft-01/', code: 'cht-ft-01' },
 ]
 transferPath.forEach(function(ele, i) {
     loadPage(ele.path, ele.code).then(function(htmlJSON) {
@@ -29,7 +30,7 @@ function loadPage(path, code = "") {
             }).on('end', function() {
                 let $ = cheerio.load(html);
                 $('body').find('ul').each(function(i, ul) {
-                    $(ul).attr('class', '');
+                    // $(ul).attr('class', '');
                     $(ul).addClass('infolist');
                 })
                 let htmlData = {
@@ -58,9 +59,18 @@ function loadPage(path, code = "") {
                 htmlData.overview = overviewHtml;
 
                 let highlightsHtml = '<ul class="infolist">';
-                highlightsHtml += $('.tourHighlights ul').html();
+                highlightsHtml += $('.tourHighlights ul').length>0? $('.tourHighlights ul').html() : '';
+                highlightsHtml += $('ul.tourHighlights').length>0? $('ul.tourHighlights').html() : '';
                 highlightsHtml += '</ul>';
                 htmlData.highlights = highlightsHtml;
+
+                let serviceIncludesHtml = '';
+                // if($('.priceIncludes').length > 0){
+                    serviceIncludesHtml += '<h2>Our Service Includes:</h2>';
+                    serviceIncludesHtml += $('.priceIncludes ul').length>0?$('.priceIncludes ul').prop('outerHTML') :'';
+                    serviceIncludesHtml += $('ul.whatIncluded').length>0?$('ul.whatIncluded').prop('outerHTML') : '';
+                    htmlData.serviceIncludes = serviceIncludesHtml;
+                // }
 
                 let TA = '';
                 if ($('.reviewDetail').length > 0) {
@@ -184,6 +194,11 @@ ${htmlJson.description}
 -->
 <!--keywords
 ${htmlJson.keywords}
+H1
+${htmlJson.tourName}
+subName
+${htmlJson.tourSubName}
+https://proxy-data.chinahighlights.com/css/tour-detail-former.css
 -->
 <link href="https://proxy-data.chinahighlights.com/css/tour-detail-former.css" rel="stylesheet">
 
@@ -235,6 +250,8 @@ ${htmlJson.TAinfo}
 
 <div class="maincontent">
   ${htmlJson.last}
+  ${htmlJson.serviceIncludes}
+
 </div>
 
 <div class="inquirybutton"><a href="#iqnuirybutton">Inquire <img alt="" class="img-responsive" height="10px" src="//data.chinahighlights.com/pic/amp-inquiry-button-arrow.png" width="16px"> </a></div>
