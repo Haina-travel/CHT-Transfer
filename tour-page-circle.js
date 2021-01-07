@@ -28,6 +28,10 @@ function loadPage(path, code="") {
                 html += data;
             }).on('end', function () {
                 let $ = cheerio.load(html);
+                $('body').find('ul').each(function (i,ul) {
+                    $(ul).attr('class','');
+                    $(ul).addClass('infolist');
+                })
                 let htmlData = {
                     tourCode: code,
                     url: path,
