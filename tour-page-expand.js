@@ -3,9 +3,9 @@ let http = require('https');
 let cheerio = require('cheerio');
 
 let transferPath = [
-    { path: '/tour/suzhoutour/sh-33/', code: 'sh-33' },
-    { path: '/tour/lhasatour/xz-4/', code: 'xz-4' },
-    { path: '/tour/huangshantour/hs-1/', code: 'hs-1' },
+    // { path: '/tour/suzhoutour/sh-33/', code: 'sh-33' },
+    // { path: '/tour/lhasatour/xz-4/', code: 'xz-4' },
+    // { path: '/tour/huangshantour/hs-1/', code: 'hs-1' },
     { path: '/tour/xiamentour/xm-7/', code: 'xm-7' },
 ]
 transferPath.forEach(function(ele, i) {
@@ -28,6 +28,10 @@ function loadPage(path, code = "") {
                 html += data;
             }).on('end', function() {
                 let $ = cheerio.load(html);
+                $('body').find('ul').each(function(i, ul) {
+                    $(ul).attr('class', '');
+                    $(ul).addClass('infolist');
+                })
                 let htmlData = {
                     tourCode: code,
                     url: path,
@@ -38,10 +42,12 @@ function loadPage(path, code = "") {
                     tourSubName: $('.topheadline').text(),
                     tourName: $('h1.Top10').text(),
                     overview: '',
-                    highlights: $('.tourHighlights ul').html(),
+                    highlights: '',
                     TAinfo: '',
+                    last: '',
                     itinerary: [],
                     onedayroute: $('.onedayroute').parent().html(),
+                    serviceIncludes: '',
                     priceIncludes: $('.TopPrice').length > 0 ? $('.TopPrice').prop('outerHTML') : ''
                 }
                 let overviewHtml = '';
@@ -50,6 +56,11 @@ function loadPage(path, code = "") {
                     overviewHtml += $(nextE).prop('outerHTML');
                 }
                 htmlData.overview = overviewHtml;
+
+                let highlightsHtml = '<ul class="infolist">';
+                highlightsHtml += $('.tourHighlights ul').html();
+                highlightsHtml += '</ul>';
+                htmlData.highlights = highlightsHtml;
 
                 let TA = '';
                 if ($('.reviewDetail').length > 0) {
@@ -77,7 +88,7 @@ function loadPage(path, code = "") {
                 // todo: .lastRead inquiry ;
                 $('.daytourBox .dayTourList').each(function(i, tourlist) {
                     $(tourlist).children('.ItineraryContent').children().each(function(j, p) {
-                        if ($(p).find('img').length > 0 ) {
+                        if ($(p).find('img').length > 0) {
                             let imgsPHtml = '';
                             for (let index = 0; index < $(p).find('img').length; index++) {
                                 const imgE = $(p).find('img').eq(index);
@@ -91,7 +102,7 @@ function loadPage(path, code = "") {
                                     imgsPHtml += `<div class="tourimg"><img alt="${$(imgE).attr('alt')}" class="TopImage img-responsive" src="${$(imgE).attr('src')}"> <span class="imgname">${$(imgE).attr('alt')}</span></div>`;
                                 }
                             }
-                            if(imgsPHtml!=='') $(p).replaceWith(imgsPHtml);
+                            if (imgsPHtml !== '') $(p).replaceWith(imgsPHtml);
                         }
                         if ($(p).find('.fa-cutlery').length > 0) {
                             let mealHtml = `<span class="Dinner">${$(p).text()}</span>`;
@@ -106,9 +117,46 @@ function loadPage(path, code = "") {
                     tourDay.title = tourDay.title.replace(tourDay.day, '');
                     htmlData.itinerary.push(tourDay);
                 });
+                if (htmlData.itinerary.length === 0) {
+                    $('.daytourBox>.ItineraryContent').each(function(i, tourlist) {
+                        $(tourlist).children().each(function(j, p) {
+                            if ($(p).find('img').length > 0) {
+                                let imgsPHtml = '';
+                                for (let index = 0; index < $(p).find('img').length; index++) {
+                                    const imgE = $(p).find('img').eq(index);
+                                    if ($(imgE).parent().hasClass('NoteTitle')) {
+                                        continue;
+                                    }
+                                    if ($(imgE).parent().parent().hasClass('NoteInfo')) {
+                                        let imgsHtml = `<div class="tourimg"><img alt="${$(imgE).attr('alt')}" class="TopImage img-responsive" src="${$(imgE).attr('src')}"> <span class="imgname">${$(imgE).attr('alt')}</span></div>`;
+                                        $(imgE).parent().replaceWith(imgsHtml);
+                                    } else {
+                                        let alt = $(imgE).attr('alt');
+                                        alt = alt ? alt : $(imgE).parent().next('.TourImgTitle').text();
+                                        $(imgE).parent().next('.TourImgTitle').remove();
+                                        imgsPHtml += `<div class="tourimg"><img alt="${$(imgE).attr('alt')}" class="TopImage img-responsive" src="${$(imgE).attr('src')}"> <span class="imgname">${alt}</span></div>`;
+                                    }
+                                }
+                                if (imgsPHtml !== '') $(p).replaceWith(imgsPHtml);
+                            }
+                            if ($(p).find('.fa-cutlery').length > 0) {
+                                let mealHtml = `<span class="Dinner">${$(p).text()}</span>`;
+                                $(p).replaceWith(mealHtml);
+                            }
+                        });
+                        let tourDay = {
+                            day: $(tourlist).prev('.tourDatesBJ').children('.tourDays').text(),
+                            title: $(tourlist).prev('.tourDatesBJ').text(),
+                            TourInfo: $(tourlist).html()
+                        }
+                        tourDay.title = tourDay.title.replace(tourDay.day, '');
+                        htmlData.itinerary.push(tourDay);
+                    });
+                }
 
                 $('#booking_form_button').remove();
-                htmlData.last = $('.includeIcon').prop('outerHTML') + $('.includeIcon').nextAll();
+                htmlData.last += $('.tripNotes').length > 0 ? $('.tripNotes').html() : '';
+                htmlData.last += $('.includeIcon').length > 0 ? $('.includeIcon').prop('outerHTML') + $('.includeIcon').next('ul').prop('outerHTML') : '';
                 // console.log(htmlData.last)
                 // console.log("over");
                 resolve(htmlData);
@@ -150,6 +198,23 @@ ${htmlJson.keywords}
   </div>
 </div>
 
+<div class="TopItinerary">
+  <div class="TMcontent"><span class="TMtitle">Tailor Make Your Tour:</span>
+  <ul class="infolist">
+      <li>Your Schedule</li>
+      <li>Your Interests</li>
+      <li>Your Hotel Tastes</li>
+  </ul>
+  </div>
+  <div class=" DetailTopTM">
+  <div class="TopPrice">
+  ${htmlJson.priceIncludes}
+  </div>
+  </div>
+</div>
+<p>
+  <a id="summary"></a>
+</p>
 <div class="maincontent">
   <!--<div class="medias"><amp-addthis data-pub-id="ra-52170b0a4a301edc" data-widget-id="odix" height="55" width="400"></amp-addthis></div>-->
   ${htmlJson.overview}
@@ -168,9 +233,6 @@ ${htmlJson.TAinfo}
   ${tourdetail}
 </div>
 
-<div class="maincontent">
-  ${htmlJson.priceIncludes}
-</div>
 <div class="maincontent">
   ${htmlJson.last}
 </div>
@@ -199,6 +261,7 @@ ${htmlJson.TAinfo}
 }
 
 var path = require('path');
+
 function writeFile(htmlStr, target_file_name = 'tmp') {
     target_file_name = target_file_name.replace(/^\/?|\/?$/g, '').replace(/\/+/g, '.') + '.html';
     fs.writeFileSync(path.join('v3', target_file_name), htmlStr, function(err) {
