@@ -5,8 +5,9 @@ let cheerio = require('cheerio');
 
 let transferPath = [
     // {path: '/tour/chengdutour/cd-7/', code: 'cd-7'},
-    {path: '/tour/chengdutour/cd-7a/', code: 'cd-7a'},
-    {path: '/tour/xiamentour/1-day-nanjing-tulou-tour/', code: 'XM-2'},
+    // {path: '/tour/chengdutour/cd-7a/', code: 'cd-7a'},
+    // {path: '/tour/xiamentour/1-day-nanjing-tulou-tour/', code: 'XM-2'},
+    {path: '/tour/zhangjiajietour/hun-4a/', code: 'hun-4a'},
 ]
 transferPath.forEach(function (ele, i) {
     loadPage(ele.path, ele.code).then(function (htmlJSON) {
@@ -28,6 +29,10 @@ function loadPage(path, code="") {
                 html += data;
             }).on('end', function () {
                 let $ = cheerio.load(html);
+                $('body').find('ul').each(function (i,ul) {
+                    $(ul).attr('class','');
+                    $(ul).addClass('infolist');
+                })
                 let htmlData = {
                     tourCode: code,
                     url: path,
@@ -36,13 +41,14 @@ function loadPage(path, code="") {
                     topImg: $('.TopCht1 img.visible-xs').length > 0 ? $('.TopCht1 img.visible-xs').attr('src') : $('.TopCht1 img').eq(0).attr('src'),
                     topImgAlt:  $('.TopCht1 img.visible-xs').length > 0? $('.TopCht1 img.visible-xs').attr('alt') : $('.TopCht1 img').eq(0).attr('alt'),
                     tourSubName: $('.topheadline').text(),
-                    tourName: $('#contentHead h1').text(),
+                    tourName: $('h1').text(),
                     overview: '', //$('#contentHead').next().html(),
                     highlights: '',//$('.highlights ul').html(),
                     TAinfo: '',
                     itinerary: [],
                     onedayroute: $('.onedayroute').parent().html(),
-                    priceIncludes: $('.priceIncludes').length > 0 ? $('.priceIncludes').html() : ''
+                    serviceIncludes: '',
+                    priceIncludes: $('.priceIncludes').length > 0 ? $('.pricePP').prop('outerHTML') : ''
                 }
                 let overviewHtml = '';
                 for (let index = 0; index < $('#contentHead').nextAll().length; index++) {
@@ -51,8 +57,19 @@ function loadPage(path, code="") {
                 }
                 htmlData.overview = overviewHtml;
 
-                let highlightsHtml = $('.highlightscontent').html();
-                htmlData.highlights = highlightsHtml.replace('highlightsdetail','hilist');
+                let serviceIncludesHtml = '';
+                if($('.priceIncludes').length > 0){
+                    serviceIncludesHtml += '<h2>' + $('.includeTitle').text() + '</h2>';
+                    serviceIncludesHtml += $('.priceIncludes ul').prop('outerHTML');
+                    htmlData.serviceIncludes = serviceIncludesHtml;
+                }
+
+                let highlightsHtml = '<ul class="infolist">' //$('.highlightscontent').html();
+                $('.highlightscontent').children().each(function(i,h){
+                    highlightsHtml += `<li>${$(h).text()}</li>`
+                });
+                highlightsHtml += '</ul>';
+                htmlData.highlights = highlightsHtml;
 
                 let TA = '';
                 if ($('.reviewDetail').length > 0) {
@@ -78,8 +95,8 @@ function loadPage(path, code="") {
                     htmlData.TAinfo = TA;
                 }
                 // todo: .lastRead inquiry ;
-                $('.touritinerary .TourList').each(function (i, tourlist) {
-                    $(tourlist).children('.TourInfo').children().each(function (j, p){
+                $('.onedayroute .onedayinfo').each(function (i, tourlist) {
+                    $(tourlist).children().each(function (j, p){
                         if ($(p).find('img').length > 0) {
                             let imgsHtml = '';
                             for (let index = 0; index < $(p).find('img').length; index++) {
@@ -94,16 +111,16 @@ function loadPage(path, code="") {
                         }
                     });
                     let tourDay = {
-                        day: $(tourlist).children('.TourDates').children('.TourDay').text(),
-                        title: $(tourlist).children('.TourDates').text(),
-                        TourInfo: $(tourlist).children('.TourInfo').html()
+                        day: $(tourlist).prev('.onedaytitle').text(),
+                        title: '',//$(tourlist).prev('.onedaytitle').text().split(':')[1],
+                        TourInfo: $(tourlist).html()
                     }
-                    tourDay.title = tourDay.title.replace(tourDay.day, '');
+                    // tourDay.title = tourDay.title.replace(tourDay.day, '');
                     htmlData.itinerary.push(tourDay);
                 });
                 let lastInfo = [];
-                ($('.touritinerary .TourList').parent().children().each(function (i, el) {
-                    if (!$(el).hasClass('TourList')) lastInfo.push($(el).prop('outerHTML'));
+                ($('.onedayroute').nextAll().each(function (i, el) {
+                    lastInfo.push($(el).prop('outerHTML'));
                 }))
                 htmlData.last = lastInfo.join('');
                 // console.log(htmlData.last)
@@ -119,13 +136,10 @@ function loadPage(path, code="") {
 
 function tourTemplate(htmlJson) {
     let tourdetail = htmlJson.itinerary.map(tourD => {
-        return `
-<div class="tourbg">
+        return `<div class="tourbg">
   <div class="tourinfo"><span class="tourdate">${tourD.day}</span> <span class="toursite">${tourD.title}</span> ${tourD.TourInfo}
   </div>
-
-</div>
-        `;
+</div>`;
     }).join('');
     let htmlStr = `
 <!--description
@@ -133,7 +147,13 @@ ${htmlJson.description}
 -->
 <!--keywords
 ${htmlJson.keywords}
+H1
+${htmlJson.tourName}
+subName
+${htmlJson.tourSubName}
+https://proxy-data.chinahighlights.com/css/tour-detail-former.css
 -->
+<link href="https://proxy-data.chinahighlights.com/css/tour-detail-former.css" rel="stylesheet">
 
 <div class="tournavi">
   <span class="TopNavi"><a href="#summary">Summary</a></span> <span class="TopNavi"><a href="#highlights">Highlights</a></span> <span class="TopNavi"><a href="#itinerary">Itinerary</a></span> <span class="TopNaviLast"><a href="#priceincludes">Price</a></span></div>
@@ -143,6 +163,21 @@ ${htmlJson.keywords}
   <div class="Top10Title">
     <div class="toursubname">${htmlJson.tourSubName}</div>
     <h1 class="Top10">${htmlJson.tourName}</h1>
+  </div>
+</div>
+
+<div class="TopItinerary">
+  <div class="TMcontent"><span class="TMtitle">Tailor Make Your Tour:</span>
+  <ul class="infolist">
+      <li>Your Schedule</li>
+      <li>Your Interests</li>
+      <li>Your Hotel Tastes</li>
+  </ul>
+  </div>
+  <div class=" DetailTopTM">
+  <div class="TopPrice">
+  ${htmlJson.priceIncludes}
+  </div>
   </div>
 </div>
 
@@ -165,12 +200,13 @@ ${htmlJson.TAinfo}
   <a id="itinerary"></a>
 <div class="tourdetail">
   <h2>Suggested Itinerary</h2>
-  ${htmlJson.onedayroute}
+  ${tourdetail}
+</div>
+<div class="maincontent">
+  ${htmlJson.last}
+  ${htmlJson.serviceIncludes}
 </div>
 
-<div class="maincontent">
-  ${htmlJson.priceIncludes}
-</div>
 
 <div class="inquirybutton"><a href="#iqnuirybutton">Inquire <img alt="" class="img-responsive" height="10px" src="//data.chinahighlights.com/pic/amp-inquiry-button-arrow.png" width="16px"> </a></div>
 <div class="tmbottom">
@@ -196,7 +232,7 @@ ${htmlJson.TAinfo}
 }
 var path = require('path');
 function writeFile(htmlStr, target_file_name = 'tmp') {
-    target_file_name = target_file_name.replace(/^\/?|\/?$/g, '').replace(/\/+/g, '.') + '.html';
+    target_file_name = target_file_name.replace(/^\/?|\/?$/g, '').replace(/\/+/g, '.') + '.2.html';
     fs.writeFileSync(path.join('v3', target_file_name), htmlStr, function(err) {
         if (err) {
             console.log("write " + err.message)
