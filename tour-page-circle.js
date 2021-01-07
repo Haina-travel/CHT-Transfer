@@ -43,8 +43,12 @@ function loadPage(path, code="") {
                     itinerary: [],
                     priceIncludes: $('.priceIncludes').length > 0 ? $('.priceIncludes').html() : ''
                 }
-                let highlightsHtml = $('.highlightscontent').html();
-                htmlData.highlights = highlightsHtml.replace('highlightsdetail','hilist');
+                let highlightsHtml = '<ul class="infolist">' //$('.highlightscontent').html();
+                $('.highlightscontent').children().each(function(i,h){
+                    highlightsHtml += `<li>${$(h).text()}</li>`
+                });
+                highlightsHtml += '</ul>';
+                htmlData.highlights = highlightsHtml;
 
                 let TA = '';
                 if ($('.reviewDetail').length > 0) {
