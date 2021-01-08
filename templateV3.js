@@ -42,9 +42,7 @@ https://proxy-data.chinahighlights.com/css/tour-detail-former.css
     <h1 class="Top10">${htmlJson.tourName}</h1>
   </div>
 </div>
-<p>
   <a id="summary"></a>
-</p>
 ${tourDays}
   ${htmlJson.priceIncludes}
   ${overview}

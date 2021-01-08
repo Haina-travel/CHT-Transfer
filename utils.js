@@ -15,8 +15,11 @@ const docOptimize = ($) => {
         // $(ul).attr('class','');
         $(ul).addClass('infolist');
     });
+    $('body').find('ol').each(function(i, ol) {
+        $(ol).replaceWith('<ul class="infolist">' + $(ol).html() + '</ul>')
+    });
     $('.earlyBird .freeUpgrade').remove('.InquiryButton');
-    $('#expandAll, .clear, #booking_form_button, .InquiryButton').remove();
+    $('#expandAll, .clear, .clearfix, #booking_form_button, #form_booking_form_paynow_button, .InquiryButton').remove();
     return $;
 }
 const htmlData = ($, pathEle) => {
@@ -25,8 +28,8 @@ const htmlData = ($, pathEle) => {
         url: pathEle.path,
         description: $('meta[name="description"]').attr('content'),
         keywords: $('meta[name="keywords"]').attr('content'),
-        topImg: $('.TopCht1 img.visible-xs').length > 0 ? $('.TopCht1 img.visible-xs').attr('src') : $('.TopCht1 img').eq(0).attr('src'),
-        topImgAlt: $('.TopCht1 img.visible-xs').length > 0 ? $('.TopCht1 img.visible-xs').attr('alt') : $('.TopCht1 img').eq(0).attr('alt'),
+        topImg: $('.TopCht1 img.visible-xs').length > 0 ? $('.TopCht1 img.visible-xs').attr('src') : $('.TopCht1 img, #photoTop img').eq(0).attr('src'),
+        topImgAlt: $('.TopCht1 img.visible-xs').length > 0 ? $('.TopCht1 img.visible-xs').attr('alt') : $('.TopCht1 img, #photoTop img').eq(0).attr('alt'),
         tourSubName: $('.topheadline').text(),
         tourName: $('h1').text(),
         overview: '',
@@ -35,6 +38,7 @@ const htmlData = ($, pathEle) => {
         last: '',
         promote: '',
         itineraryP: '',
+        contentData: [],
         itinerary: [],
         itineraryDays: [],
         faq: [],
@@ -58,10 +62,10 @@ const parseOverview = ($) => {
             const nextE = $('#contentHead').nextAll().eq(index);
             overviewHtml += $(nextE).prop('outerHTML');
         }
-    } else if ($('.tourHighlights').prevAll().length > 0) {
+    } else if ($('.tourHighlights').eq(0).prevAll().length > 0) {
         for (let index = 0; index < $('.tourHighlights').eq(0).prevAll().length; index++) {
             const nextE = $('.tourHighlights').eq(0).prevAll().eq(index);
-            overviewHtml += $(nextE).prop('outerHTML');
+            overviewHtml = $(nextE).prop('outerHTML') + overviewHtml;
         }
     }
     return overviewHtml;
@@ -70,6 +74,10 @@ const serviceIncludesH = ($) => {
     let serviceIncludesHtml = '';
     serviceIncludesHtml += $('.priceIncludes ul').length > 0 ? $('.priceIncludes ul').prop('outerHTML') : '';
     serviceIncludesHtml += $('ul.whatIncluded').length > 0 ? $('ul.whatIncluded').prop('outerHTML') : '';
+
+    $('ul.whatIncluded').nextUntil('h2').each(function(i, tourp) {
+        serviceIncludesHtml += $(tourp).prop('outerHTML');
+    })
     return serviceIncludesHtml;
 };
 const topPrice = ($) => {
@@ -101,8 +109,8 @@ const tourHighlights = ($) => {
         highlightsHtml += $('.TourHighlights').eq(0).children('ul').html();
     }
     // todo: .tourHighlights>ul
-    if ($('.tourHighlights ul').length > 0) {
-        highlightsHtml += $('.tourHighlights ul').html();
+    if ($('.tourHighlights ul,.tourHighlights>ul').length > 0) {
+        highlightsHtml += $('.tourHighlights ul, .tourHighlights>ul').eq(0).html();
     }
     if ($('.highlights ul').length > 0) {
         highlightsHtml += $('.highlights ul').html();
@@ -218,9 +226,38 @@ const itineraryImg = (imgSrc, imgTitle, templateV) => {
             imgsHtml = `<div class="infoimage"><img alt="${imgTitle}" class="img-responsive " src="${imgSrc}"></div>`;
             break;
         default:
+            // v2
+            imgTitleHtml = imgTitle !== '' ? `<span class="infoimagetitle">${imgTitle}</span>` : '';
+            imgsHtml = `<div class="infoimage"><img alt="${imgTitle}" class="img-responsive " src="${imgSrc}"></div>`;
             break;
     }
     return imgsHtml;
+};
+const replaceElement = ($, p, templateV) => {
+    if ($(p).find('img').length > 0) {
+        let imgsPHtml = '';
+        for (let index = 0; index < $(p).find('img').length; index++) {
+            const imgE = $(p).find('img').eq(index);
+            if ($(imgE).parent().hasClass('NoteTitle')) {
+                continue;
+            }
+            if ($(imgE).parent().parent().hasClass('NoteInfo')) {
+                let imgsHtml = itineraryImg($(imgE).attr('src'), $(imgE).attr('alt'), templateV);
+                $(imgE).parent().replaceWith(imgsHtml);
+            } else {
+                let alt = $(imgE).attr('alt');
+                alt = alt ? alt : $(imgE).parent().next('.TourImgTitle, .photoBy').text();
+                $(imgE).parent().next('.TourImgTitle, .photoBy').remove();
+                imgsPHtml += itineraryImg($(imgE).attr('src'), alt, templateV);
+            }
+        }
+        if (imgsPHtml !== '') return imgsPHtml;
+    }
+    if ($(p).find('.fa-cutlery').length > 0) {
+        let mealHtml = `<span class="Dinner">${$(p).text()}</span>`;
+        return mealHtml;
+    }
+    return $(p).prop('outerHTML');
 };
 /**
  * 读取行程列表
@@ -238,35 +275,14 @@ const itineraryDetail = ($, templateV, $tourBox, dayChildrenSelector, titleClass
         let detailSelector = dayChildrenSelector !== null ? $(tourlist).children(dayChildrenSelector) : $(tourlist);
         let titleSelector = dayChildrenSelector !== null ? $(tourlist).children('.' + titleClass) : $(tourlist).prev('.' + titleClass);
         let daySelector = titleSelector.children('.' + dayClass);
+        let detailHtml = '';
         detailSelector.children().each(function(j, p) {
-            if ($(p).find('img').length > 0) {
-                let imgsPHtml = '';
-                for (let index = 0; index < $(p).find('img').length; index++) {
-                    const imgE = $(p).find('img').eq(index);
-                    if ($(imgE).parent().hasClass('NoteTitle')) {
-                        continue;
-                    }
-                    if ($(imgE).parent().parent().hasClass('NoteInfo')) {
-                        let imgsHtml = itineraryImg($(imgE).attr('src'), $(imgE).attr('alt'), templateV);
-                        $(imgE).parent().replaceWith(imgsHtml);
-                    } else {
-                        let alt = $(imgE).attr('alt');
-                        alt = alt ? alt : $(imgE).parent().next('.TourImgTitle').text();
-                        $(imgE).parent().next('.TourImgTitle').remove();
-                        imgsPHtml += itineraryImg($(imgE).attr('src'), alt, templateV);
-                    }
-                }
-                if (imgsPHtml !== '') $(p).replaceWith(imgsPHtml);
-            }
-            if ($(p).find('.fa-cutlery').length > 0) {
-                let mealHtml = `<span class="Dinner">${$(p).text()}</span>`;
-                $(p).replaceWith(mealHtml);
-            }
+            detailHtml += replaceElement($, p, templateV);
         });
         let tourDay = {
             day: daySelector.text(),
             title: titleSelector.text(),
-            TourInfo: detailSelector.html()
+            TourInfo: detailHtml //detailSelector.html()
         }
         tourDay.title = tourDay.title.replace(tourDay.day, '');
         // 一日游×2
@@ -274,7 +290,7 @@ const itineraryDetail = ($, templateV, $tourBox, dayChildrenSelector, titleClass
             tourDay = {
                 day: titleSelector.text(),
                 title: '',
-                TourInfo: detailSelector.html()
+                TourInfo: detailHtml //detailSelector.html()
             }
             if (dayClass === null) {
                 tourDay = {
@@ -291,6 +307,12 @@ const itineraryDetail = ($, templateV, $tourBox, dayChildrenSelector, titleClass
     });
     return itineraryData;
 };
+/**
+ * @deprecated
+ * @param {*} $
+ * @param {*} $tourBox
+ * @param {*} templateV
+ */
 const itineraryDetail_without_daybox = ($, $tourBox, templateV) => {
     let itineraryData = [];
     $tourBox.each(function(i, tourlist) {
@@ -369,6 +391,8 @@ module.exports = {
     parseTA,
     itinerarySummary,
     itineraryOverview,
+    replaceElement,
+    itineraryImg,
     itineraryDetail,
     itineraryDetail_without_daybox,
     lastInfo_cht,
