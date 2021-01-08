@@ -32,7 +32,7 @@ function loadPage(ele) {
                 htmlData.tourSubName = $('.Top10').text();
                 htmlData.tourName = $('.TourItinerary').text();
                 htmlData.promote = $('.earlyBird .freeUpgrade').prop('outerHTML');
-                htmlData.itinerary = utils.itineraryDetail($, templateV, $('#itineraryDetails .TourList'), 'TourInfo', 'TourDates', 'TourDay');
+                htmlData.itinerary = utils.itineraryDetail($, templateV, $('#itineraryDetails .TourList'), '.TourInfo', 'TourDates', 'TourDay');
                 htmlData.last = utils.lastInfo_cht($);
 
                 resolve(htmlData);

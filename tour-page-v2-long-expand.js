@@ -32,7 +32,7 @@ function loadPage(ele) {
                 $ = utils.docOptimize($);
                 let htmlData = utils.htmlData($, ele);
                 htmlData.tourSubName = $('.topSubTitle').text();
-                htmlData.itinerary = utils.itineraryDetail($, templateV, $('.daytourBox>.dayTourList, .daytourBox>.dayTourList>.dayTourList'), 'ItineraryContent', 'tourDatesBJ', 'tourDays');
+                htmlData.itinerary = utils.itineraryDetail($, templateV, $('.daytourBox>.dayTourList, .daytourBox>.dayTourList>.dayTourList'), '.ItineraryContent', 'tourDatesBJ', 'tourDays');
                 htmlData.last = utils.lastInfo_cht($);
 
                 resolve(htmlData);

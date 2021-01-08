@@ -32,7 +32,7 @@ function loadPage(ele) {
                 let $ = cheerio.load(html);
                 $ = utils.docOptimize($);
                 let htmlData = utils.htmlData($, ele);
-                htmlData.itinerary = utils.itineraryDetail($, templateV, $('.touritinerary .TourList'), 'TourInfo', 'TourDates', 'TourDay');
+                htmlData.itinerary = utils.itineraryDetail($, templateV, $('.touritinerary .TourList'), '.TourInfo', 'TourDates', 'TourDay');
                 htmlData.last = utils.lastInfo_in_itinerary($, $('.touritinerary .TourList').parent(), 'TourList');
 
                 resolve(htmlData);

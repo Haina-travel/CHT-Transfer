@@ -227,7 +227,7 @@ const itineraryImg = (imgSrc, imgTitle, templateV) => {
  * @param {*} $
  * @param {*} templateV
  * @param {*} $tourBox
- * @param {*} detailClass dayBox下的详情的类名, 没有dayBox则为null
+ * @param {*} detailClass dayBox下的详情的css选择器, 没有dayBox则为null
  * @param {*} titleClass
  * @param {*} dayClass
  */
