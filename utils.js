@@ -227,16 +227,16 @@ const itineraryImg = (imgSrc, imgTitle, templateV) => {
  * @param {*} $
  * @param {*} templateV
  * @param {*} $tourBox
- * @param {*} contentSelector dayBox下的详情的css选择器, 没有dayBox则为null
+ * @param {*} dayChildrenSelector dayBox下的详情的css选择器, 没有dayBox则为null
  * @param {*} titleClass
  * @param {*} dayClass
  * @return {Array} itinerary = [{day:'', title: '', TourInfo: ''}]
  */
-const itineraryDetail = ($, templateV, $tourBox, contentSelector, titleClass, dayClass) => {
+const itineraryDetail = ($, templateV, $tourBox, dayChildrenSelector, titleClass, dayClass) => {
     let itineraryData = [];
     $tourBox.each(function(i, tourlist) {
-        let detailSelector = contentSelector !== null ? $(tourlist).children(contentSelector) : $(tourlist);
-        let titleSelector = contentSelector !== null ? $(tourlist).children('.' + titleClass) : $(tourlist).prev('.' + titleClass);
+        let detailSelector = dayChildrenSelector !== null ? $(tourlist).children(dayChildrenSelector) : $(tourlist);
+        let titleSelector = dayChildrenSelector !== null ? $(tourlist).children('.' + titleClass) : $(tourlist).prev('.' + titleClass);
         let daySelector = titleSelector.children('.' + dayClass);
         detailSelector.children().each(function(j, p) {
             if ($(p).find('img').length > 0) {
