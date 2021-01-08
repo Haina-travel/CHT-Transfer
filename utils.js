@@ -16,7 +16,7 @@ const docOptimize = ($) => {
         $(ul).addClass('infolist');
     });
     $('.earlyBird .freeUpgrade').remove('.InquiryButton');
-    $('#booking_form_button, .InquiryButton').remove();
+    $('#expandAll, .clear, #booking_form_button, .InquiryButton').remove();
     return $;
 }
 const htmlData = ($, pathEle) => {
@@ -97,8 +97,8 @@ const topPrice = ($) => {
 };
 const tourHighlights = ($) => {
     let highlightsHtml = '<ul class="infolist">';
-    if ($('.TourHighlights>ul').length > 0) {
-        highlightsHtml += $('.TourHighlights>ul').html();
+    if ($('.TourHighlights').length > 0) {
+        highlightsHtml += $('.TourHighlights').eq(0).children('ul').html();
     }
     // todo: .tourHighlights>ul
     if ($('.tourHighlights ul').length > 0) {
@@ -122,15 +122,14 @@ const tourHighlights = ($) => {
 const parseTA = ($) => {
     let TA = '';
     if ($('.reviewDetail').length > 0) {
-        let taP = $('.highlights .reviewDetail').text();
-        let taFrom = $('.highlights .reviewDetail .byWho').text();
+        let taP = $('.reviewDetail').text();
+        let taFrom = $('.reviewDetail .byWho').text();
         tap = taP.replace(taFrom, '');
-        let taLink = $('.highlights .reviewNumber a').attr('href');
+        let taLink = $('.reviewNumber a').attr('href');
         TA = `<div class="reviews">
         <p>${taP}<a href="${taLink}" target="_top">Read more</a></p>
         <p class="reviewname">${taFrom}</p>
         </div>`;
-        htmlData.TAinfo = TA;
     }
     if ($('.reviewdetail').length > 0) {
         let taP = $('.reviewdetail').text();
@@ -155,7 +154,8 @@ const parseTA = ($) => {
 };
 const itinerarySummary = ($) => {
     let tmpSummary = [];
-    $('.TourItinerary').next('div').find('.TourDays').each(function(i, d) {
+    // $('.TourItinerary').next('div').find('.TourDays').each(function(i, d) {
+    $('.CityTransport').siblings('.TourDays').each(function(i, d) {
         let tmpD = {
             day: $(d).children('b').text(),
             dayTour: []
@@ -178,6 +178,14 @@ const lastInfo_cht = ($) => {
     let info = '';
     info += $('.tripNotes').length > 0 ? $('.tripNotes').html() : '';
     $('.TopDetail').next('.container').children('.row').children('div[class^="col-"],h2[class^="col-"]').each(function(i, p) {
+        if ($(p).prop('tagName').toLowerCase() === 'div') {
+            info += $(p).html();
+            return true;
+        }
+        $(p).attr('class', '');
+        info += $(p).prop('outerHTML');
+    })
+    $('#footer').prev('.container').children('.row').children('div[class^="col-"],h2[class^="col-"]').each(function(i, p) {
         if ($(p).prop('tagName').toLowerCase() === 'div') {
             info += $(p).html();
             return true;
