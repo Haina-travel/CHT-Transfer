@@ -222,20 +222,21 @@ const itineraryImg = (imgSrc, imgTitle, templateV) => {
     }
     return imgsHtml;
 };
-/*!
- *
+/**
+ * 读取行程列表
  * @param {*} $
  * @param {*} templateV
  * @param {*} $tourBox
- * @param {*} detailClass dayBox下的详情的css选择器, 没有dayBox则为null
+ * @param {*} contentSelector dayBox下的详情的css选择器, 没有dayBox则为null
  * @param {*} titleClass
  * @param {*} dayClass
+ * @return {Array} itinerary = [{day:'', title: '', TourInfo: ''}]
  */
-const itineraryDetail = ($, templateV, $tourBox, detailClass, titleClass, dayClass) => {
+const itineraryDetail = ($, templateV, $tourBox, contentSelector, titleClass, dayClass) => {
     let itineraryData = [];
     $tourBox.each(function(i, tourlist) {
-        let detailSelector = detailClass !== null ? $(tourlist).children(detailClass) : $(tourlist);
-        let titleSelector = detailClass !== null ? $(tourlist).children('.' + titleClass) : $(tourlist).prev('.' + titleClass);
+        let detailSelector = contentSelector !== null ? $(tourlist).children(contentSelector) : $(tourlist);
+        let titleSelector = contentSelector !== null ? $(tourlist).children('.' + titleClass) : $(tourlist).prev('.' + titleClass);
         let daySelector = titleSelector.children('.' + dayClass);
         detailSelector.children().each(function(j, p) {
             if ($(p).find('img').length > 0) {
