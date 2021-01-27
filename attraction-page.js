@@ -26,7 +26,7 @@ let transferPath = [
     {path: '/taiwan/attraction/'},
     {path: '/tianjin/attraction/'},
     {path: '/yanan/attraction/'},
-    {path: '/zhaoxing/attraction/'},
+    // {path: '/zhaoxing/attraction/'}, // 不存在
 ]
 let templateV = 'attraction';
 transferPath.forEach(function(ele, i) {
