@@ -5,28 +5,29 @@ let utils = require('./utils');
 let template = require('./attraction');
 
 let transferPath = [
-    {path: '/alshan/attraction/'},
-    {path: '/baotou/attraction/'},
-    // {path: '/hohhot/attraction/'}, // template
-    { path: '/changchun/attraction/' },
-    {path: '/shenyang/attraction/'},
-    {path: '/dalian/attraction/'},
-    {path: '/fenghuang/attraction/'},
-    {path: '/chongqing/attraction/'},
-    {path: '/shenzhen/attraction/'},
-    {path: '/zhaoqing/attraction/'},
-    // {path: '/zhuhai/attraction/'},
-    {path: '/foshan/attraction/'},
-    {path: '/dongguan/attraction/'},
-    {path: '/guangzhou/attraction/'},
-    {path: '/wuhan/attraction/'},
-    {path: '/jingzhou/attraction/'},
-    {path: '/yichang/attraction/'},
-    // {path: '/yangtzeriver/attraction/'},
-    {path: '/taiwan/attraction/'},
-    {path: '/tianjin/attraction/'},
-    {path: '/yanan/attraction/'},
-    // {path: '/zhaoxing/attraction/'}, // 不存在
+    {path: '/harbin/attraction/'},
+    // {path: '/alshan/attraction/'},
+    // {path: '/baotou/attraction/'},
+    // // {path: '/hohhot/attraction/'}, // template
+    // { path: '/changchun/attraction/' },
+    // {path: '/shenyang/attraction/'},
+    // {path: '/dalian/attraction/'},
+    // {path: '/fenghuang/attraction/'},
+    // {path: '/chongqing/attraction/'},
+    // {path: '/shenzhen/attraction/'},
+    // {path: '/zhaoqing/attraction/'},
+    // // {path: '/zhuhai/attraction/'},
+    // {path: '/foshan/attraction/'},
+    // {path: '/dongguan/attraction/'},
+    // {path: '/guangzhou/attraction/'},
+    // {path: '/wuhan/attraction/'},
+    // {path: '/jingzhou/attraction/'},
+    // {path: '/yichang/attraction/'},
+    // // {path: '/yangtzeriver/attraction/'},
+    // {path: '/taiwan/attraction/'},
+    // {path: '/tianjin/attraction/'},
+    // {path: '/yanan/attraction/'},
+    // // {path: '/zhaoxing/attraction/'}, // 不存在
 ]
 let templateV = 'attraction';
 transferPath.forEach(function(ele, i) {
